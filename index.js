@@ -11,7 +11,7 @@
 'use strict';
 const Alexa = require('alexa-sdk');
 const fetch = require("node-fetch");
-var AWS = require("aws-sdk");
+const AWS = require("aws-sdk");
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 
@@ -100,7 +100,7 @@ const handlers = {
         var params = {
             TableName : "Product",
             ProjectionExpression:"#pr, vendor, location, price",
-            KeyConditionExpression: "#pr = :pp and vendor = :vv",
+            FilterExpression: "#pr = :pp and vendor = :vv",
             ExpressionAttributeNames:{
                 "#pr": "productname"
             },
@@ -110,7 +110,7 @@ const handlers = {
             }
         };
 
-        docClient.query(params, function(err, data) {
+        docClient.scan(params, function(err, data) {
             if (err) {
                 console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
                 this.response.speak("Sorry could not process order");
@@ -136,7 +136,7 @@ const handlers = {
         var params = {
             TableName : "Product",
             ProjectionExpression:"#pr, vendor, location, price",
-            KeyConditionExpression: "#pr = :pp",
+            FilterExpression: "#pr = :pp",
             ExpressionAttributeNames:{
                 "#pr": "productname"
             },
@@ -145,7 +145,7 @@ const handlers = {
             }
         };
 
-        docClient.query(params, function(err, data) {
+        docClient.scan(params, function(err, data) {
             if (err) {
                 console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
                 const speechOutput = ORDER_PRODUCT_NOT_FOUND + product
