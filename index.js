@@ -88,26 +88,20 @@ function pay(amount, success, failure) {
 }
 
 function isLocked(ID) {
-    var params = {
-        TableName : "Locks",
-        Key:{
-            "deviceID": {"S": ID}
-        }
-    };
+    var params = {};
+
+    params.TableName = "Locks";
+    params.Key = {"deviceID" : ID}
 
     docClient.get(params, function(err, data) {
         if (err) {
             console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
 
-            var params = {
-                TableName : "Locks",
-                Item:{
-                    "deviceID": {"S": ID},
-                    "state": false
-                }
-            };
+            var params2 = {};
+            params2.TableName = "Locks";
+            params2.Item = {"deviceID" : ID, "state" : false}
 
-            docClient.put(params, function(err, data) {
+            docClient.put(params2, function(err, data) {
                 if (err) {
                     console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
                     return true;
