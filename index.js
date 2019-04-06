@@ -10,9 +10,11 @@
 
 'use strict';
 const Alexa = require('alexa-sdk');
+const fetch = require("node-fetch");
 var AWS = require("aws-sdk");
 
 var docClient = new AWS.DynamoDB.DocumentClient();
+
 
 //=========================================================================================================================================
 //TODO: The items below this comment need your attention.
@@ -21,10 +23,11 @@ var docClient = new AWS.DynamoDB.DocumentClient();
 //Replace with your app ID (OPTIONAL).  You can find this value at the top of your skill's page on http://developer.amazon.com.
 //Make sure to enclose your value in quotes, like this: const APP_ID = 'amzn1.ask.skill.bb4045e6-b3e8-4133-b650-72923c5980f1';
 const APP_ID = undefined;
+const URL = 'https://api.sandbox.mobilepay.dk/bindings-restapi/api/v1/payments/payout-bankaccount';
 
 const SKILL_NAME = 'Voice Pay';
 const TRANSACTION_COMPLETE_MESSAGE = "Transaction completed ";
-const ORDER_PRODUCT_NOT_FOUND = "Could not find anywhere to order ";
+const ORDER_PLACED_MESSAGE = "Placed order for ";
 const HELP_MESSAGE = 'You can say pay amount to recipient';
 const HELP_REPROMPT = 'What can I help you with?';
 const STOP_MESSAGE = 'Goodbye!';
@@ -45,8 +48,50 @@ const handlers = {
         const amount = this.event.request.intent.slots.amount.value;
         const speechOutput = TRANSACTION_COMPLETE_MESSAGE + amount + ' to ' + recipient;
 
-        this.response.speak(speechOutput);
-        this.emit(':responseReady');
+        var succes = false;
+        
+        const otherParams = {
+            headers: {
+                'Content-Type': 'application/json',
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Credentials": true,
+                'x-ibm-client-id': '1c0cd3ff-1143-476b-b136-efe9b1f5ecf3',
+                'x-ibm-client-secret': 'L7yW0eV0eK5yX1nK4rO0lI8sX5aN2tL6aQ0sL7gM1xO6sW8kK1',
+            },
+            body: JSON.stringify({
+                "merchantId": "510665bd-3d46-478f-a36e-e43826b89705",
+                "merchantBinding": "whateverTest1",
+                "receiverRegNumber": "3098",
+                "receiverAccountNumber": "3100460793",
+                "amount": amount
+
+            }),
+            method: "POST"
+        };
+
+        fetch(URL, otherParams)
+            .then(data => {
+                
+                var status = data.status;
+                console.log(status);
+                succes = status == 204;
+                console.log(succes);
+
+                if (succes) {
+                    console.log(this.response);
+                    this.response.speak(speechOutput);
+                    this.emit(':responseReady');
+                } else {
+                    console.log(this.response);
+                    this.response.speak("Transaction failed");
+                    this.emit(':responseReady');
+                }
+            })
+            .catch(error => {
+                console.log(error);
+                this.response.speak("Shiityyy error");
+                this.emit(':responseReady');
+            });
     },
     "AnswerOrder": function () {
         const product = this.event.request.intent.slots.order.value;
