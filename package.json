@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "alexa-sdk": "^1.0.25",
-    "node-fetch": "^2.3.0"
+    "aws-sdk": "^2.437.0",
+    "node-fetch": "^2.3.0",
+    "uniqid": "^5.0.3"
   }
 }

@@ -14,7 +14,7 @@ const fetch = require("node-fetch");
 const AWS = require("aws-sdk");
 
 var docClient = new AWS.DynamoDB.DocumentClient();
-const sqsClient = new AWS.SQS()
+const sqs = new AWS.SQS()
 
 
 //=========================================================================================================================================
@@ -39,14 +39,14 @@ const STOP_MESSAGE = 'Goodbye!';
 //=========================================================================================================================================
 function enqueue(product) {
     const params = {
-        MessageBody: JSON.stringfy({
+        MessageBody: JSON.stringify({
             time: (new Date(Date.now())).toISOString(),
             product: product,
             phone: "+4564518696",
             name: "Mark",
             address: "Åbogade 34"
         }),
-        QueueUrl: queueUrl
+        QueueUrl: "https://sqs.eu-west-1.amazonaws.com/803992687199/orderq"
     }
 
     sqs.sendMessage(params, (err, data) => {
@@ -81,8 +81,8 @@ function pay(amount, success, failure) {
     };
 
     fetch(URL, otherParams)
-            .then(success(data))
-            .catch(failure(data));
+            .then(success)
+            .catch(failure);
 }
 
 
@@ -217,7 +217,7 @@ const handlers = {
                 var places = ""
 
                 data.Items.forEach(function(item) {
-                    places += item.vendor + ", "
+                    places += item.vendorname+ ", "
                 });
                 
                 const speechOutput = "I found " + data.Count + " places you can order " + product + " from " + places + ". Where would you like to order " + product + " from?";
