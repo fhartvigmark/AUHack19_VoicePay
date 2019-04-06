@@ -160,16 +160,16 @@ function setLock(ID, newState) {
 
 const handlers = {
     'LaunchRequest': function () {
-        var deviceID = this.context.System.device.deviceId;
+        var deviceID = this.event.context.System.device.deviceId;
 
-        if (isLocked(deviceID)) {
+        if (await isLocked(deviceID)) {
             this.response.speak("Your account is locked");
             this.emit(':responseReady');
-            return;
         }
-
-        this.response.speak(SKILL_NAME);
-        this.emit(':responseReady');
+        else{
+            this.response.speak(SKILL_NAME);
+            this.emit(':responseReady');
+        }
         //this.emit('MakePayment');
     },
     'MakePayment': function () {
