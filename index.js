@@ -53,10 +53,10 @@ function enqueue(product) {
 
     sqs.sendMessage(params, (err, data) => {
         if (err) {
-            console.log('error:', err)
+            console.log('error:', err);
             //context.done('error', 'ERROR Put SQS')
         } else {
-            console.log('data:', data.MessageId)
+            console.log('data:', data.MessageId);
             //context.done(null, '')
         }
     })
@@ -90,16 +90,16 @@ function pay(amount, success, failure) {
 function isLocked(ID) {
     var params = {};
 
-    params.TableName = "Locks";
-    params.Key = {"deviceID" : ID}
+    params.TableName = "Lock";
+    params.Key = {"lock" : ID};
 
     docClient.get(params, function(err, data) {
         if (err) {
             console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
 
             var params2 = {};
-            params2.TableName = "Locks";
-            params2.Item = {"deviceID" : ID, "state" : false}
+            params2.TableName = "Lock";
+            params2.Item = {"lock" : ID, "state" : false}
 
             docClient.put(params2, function(err, data) {
                 if (err) {
@@ -118,9 +118,9 @@ function isLocked(ID) {
 
 function setLock(ID, newState) {
     var params = {
-        TableName : "Locks",
+        TableName : "Lock",
         Key:{
-            "deviceID": ID,
+            "lock": ID
         },
         UpdateExpression: "set info.state = :s",
         ExpressionAttributeValues:{
@@ -145,9 +145,9 @@ function setLock(ID, newState) {
 
 const handlers = {
     'LaunchRequest': function () {
-        var deviceID = this.event.context.System.device.deviceId;
+        var deviceID = String(this.event.context.System.device.deviceId);
 
-        if (await isLocked(deviceID)) {
+        if (isLocked(deviceID)) {
             this.response.speak("Your account is locked");
             this.emit(':responseReady');
         }
