@@ -8,26 +8,25 @@ var lambda = new AWS.Lambda({
   region: 'eu-west-1' //change to your region
 });
 
-const table = "Product";
+const table = "Vendor";
 
 module.exports.handler = (event, context, callback) => {
 
-	// content of the new product 
+	// content of the new vendor 
 	// body: JSON.stringify({
-	// 		"price": ??100??,
 	// 		"vendor_loc": "Århus N - Finlandsgade 20",
 	// 		"vendorname": "Dominos",
-	// 		"productname": "Pizzas",
-	// 		"productID": "a2141faef214124aefae12312",
-	// 		"account": 10000119798,
-	// 		"regnr": 14684116886,
-	// 		"vendorID": 68168168186,
+	// 		"productname": "Pizzas",	
+	// 		"account": 10000119798,		// TAL
+	// 		"regnr": 14684116886, 		// TAL
+	// 		"vendorID": 68168168186, 	// TAL
 	// }),
   let content = JSON.parse(event.body);
 	console.log(content);
 	if (content === undefined){
-		callback('Error in parsing body json product_add.js: ', null);
+		callback('Error in parsing body json vendor_add.js: ', null);
 	}
+
 	insertData(content, (err, result) => {
 		if (err){
 			callback('Error in insert: ' + err, null);
@@ -45,19 +44,16 @@ module.exports.handler = (event, context, callback) => {
 };
 
 const insertData = (content, fn) => {
-	var prodid = uniq();
-	var vendorid = uniq();
+	var id = uniq();
 	var params = {
     	TableName:table,
     	Item: {
-					"price": content.price,
 					"vendor_loc": content.vendor_loc,
 					"vendorname": content.vendorname,
 					"productname": content.productname,
-					"productID": prodid,
 					"account": content.account,
 					"regnr": content.regnr,
-	        "vendorID":vendorid
+	        "vendorID": id
 	    }
 	};
 	
