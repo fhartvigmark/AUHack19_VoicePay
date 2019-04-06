@@ -14,6 +14,7 @@ const fetch = require("node-fetch");
 const AWS = require("aws-sdk");
 
 var docClient = new AWS.DynamoDB.DocumentClient();
+const sqsClient = new AWS.SQS()
 
 
 //=========================================================================================================================================
@@ -31,6 +32,58 @@ const ORDER_PLACED_MESSAGE = "Placed order for ";
 const HELP_MESSAGE = 'You can say pay amount to recipient';
 const HELP_REPROMPT = 'What can I help you with?';
 const STOP_MESSAGE = 'Goodbye!';
+
+
+//=========================================================================================================================================
+//Functions
+//=========================================================================================================================================
+function enqueue(product) {
+    const params = {
+        MessageBody: JSON.stringfy({
+            time: (new Date(Date.now())).toISOString(),
+            product: product,
+            phone: "+4564518696",
+            name: "Mark",
+            address: "Åbogade 34"
+        }),
+        QueueUrl: queueUrl
+    }
+
+    sqs.sendMessage(params, (err, data) => {
+        if (err) {
+            console.log('error:', err)
+            //context.done('error', 'ERROR Put SQS')
+        } else {
+            console.log('data:', data.MessageId)
+            //context.done(null, '')
+        }
+    })
+}
+
+function pay(amount, success, failure) {
+    const otherParams = {
+        headers: {
+            'Content-Type': 'application/json',
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Credentials": true,
+            'x-ibm-client-id': '1c0cd3ff-1143-476b-b136-efe9b1f5ecf3',
+            'x-ibm-client-secret': 'L7yW0eV0eK5yX1nK4rO0lI8sX5aN2tL6aQ0sL7gM1xO6sW8kK1',
+        },
+        body: JSON.stringify({
+            "merchantId": "510665bd-3d46-478f-a36e-e43826b89705",
+            "merchantBinding": "whateverTest1",
+            "receiverRegNumber": "3098",
+            "receiverAccountNumber": "3100460793",
+            "amount": amount
+
+        }),
+        method: "POST"
+    };
+
+    fetch(URL, otherParams)
+            .then(success(data))
+            .catch(failure(data));
+}
 
 
 //=========================================================================================================================================
@@ -99,8 +152,8 @@ const handlers = {
 
         var params = {
             TableName : "Product",
-            ProjectionExpression:"#pr, vendor, location, price",
-            FilterExpression: "#pr = :pp and vendor = :vv",
+            ProjectionExpression:"#pr, vendorname, location, price",
+            FilterExpression: "#pr = :pp and vendorname = :vv",
             ExpressionAttributeNames:{
                 "#pr": "productname"
             },
@@ -123,10 +176,16 @@ const handlers = {
                     this.response.speak("Sorry could not process order");
                 }
                 else {
-                    this.response.speak("Order placed");
-                    var price = data.Items[0].price
-                    //TODO: make payment
-                    this.emit(':responseReady');
+                    var price = data.Items[0].price;
+
+                    enqueue(product);
+                    pay(price, data => {
+                        this.response.speak("Order placed");
+                        this.emit(':responseReady');
+                    }, data => {
+                        this.response.speak("Order failed");
+                        this.emit(':responseReady');
+                    });
                 }
             }
         });
@@ -135,7 +194,7 @@ const handlers = {
         const product = this.event.request.intent.slots.order.value;
         var params = {
             TableName : "Product",
-            ProjectionExpression:"#pr, vendor, location, price",
+            ProjectionExpression:"#pr, vendorname, location, price",
             FilterExpression: "#pr = :pp",
             ExpressionAttributeNames:{
                 "#pr": "productname"
