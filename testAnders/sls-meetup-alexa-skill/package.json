@@ -2,7 +2,9 @@
   "name": "sls-meetup-alexa-skill",
   "description": "",
   "version": "0.1.0",
-  "dependencies": {},
+  "dependencies": {
+    "node-fetch": "^2.3.0"
+  },
   "devDependencies": {
     "serverless-alexa-skills": "^0.1.0"
   }
