@@ -10,6 +10,9 @@
 
 'use strict';
 const Alexa = require('alexa-sdk');
+var AWS = require("aws-sdk");
+
+var docClient = new AWS.DynamoDB.DocumentClient();
 
 //=========================================================================================================================================
 //TODO: The items below this comment need your attention.
@@ -21,6 +24,7 @@ const APP_ID = undefined;
 
 const SKILL_NAME = 'Voice Pay';
 const TRANSACTION_COMPLETE_MESSAGE = "Transaction completed ";
+const ORDER_PRODUCT_NOT_FOUND = "Could not find anywhere to order ";
 const HELP_MESSAGE = 'You can say pay amount to recipient';
 const HELP_REPROMPT = 'What can I help you with?';
 const STOP_MESSAGE = 'Goodbye!';
@@ -42,6 +46,78 @@ const handlers = {
         const speechOutput = TRANSACTION_COMPLETE_MESSAGE + amount + ' to ' + recipient;
 
         this.response.speak(speechOutput);
+        this.emit(':responseReady');
+    },
+    "AnswerOrder": function () {
+        const product = this.event.request.intent.slots.order.value;
+        const vendor = this.event.request.intent.slots.vendor.value;
+
+        var params = {
+            TableName : "Products",
+            ProjectionExpression:"#pr, vendor, location, price",
+            KeyConditionExpression: "#pr = :pp and vendor = :vv",
+            ExpressionAttributeNames:{
+                "#pr": "product"
+            },
+            ExpressionAttributeValues: {
+                ":pp": product,
+                ":vv": vendor
+            }
+        };
+
+        docClient.query(params, function(err, data) {
+            if (err) {
+                console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
+                this.response.speak("Sorry could not process order");
+            } else {
+                console.log("Query succeeded.");
+                var places = ""
+                if (data.Count != 1) {
+                    this.response.speak("Sorry could not process order");
+                }
+                else {
+                    this.response.speak("Order placed");
+                    var price = data.Items[0].price
+                }
+            }
+        });
+        //TODO: make payment
+        
+        this.emit(':responseReady');
+    },
+    'MakeOrder': function () {
+        const product = this.event.request.intent.slots.order.value;
+        var params = {
+            TableName : "Products",
+            ProjectionExpression:"#pr, vendor, location, price",
+            KeyConditionExpression: "#pr = :pp",
+            ExpressionAttributeNames:{
+                "#pr": "product"
+            },
+            ExpressionAttributeValues: {
+                ":pp": product
+            }
+        };
+
+        docClient.query(params, function(err, data) {
+            if (err) {
+                console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
+                const speechOutput = ORDER_PRODUCT_NOT_FOUND + product
+                this.response.speak(speechOutput);
+            } else {
+                console.log("Query succeeded.");
+                var places = ""
+
+                data.Items.forEach(function(item) {
+                    places += item.vendor + ", "
+                });
+                
+                const speechOutput = "I found " + data.Count + " places you can order " + product + " from" + places + ". Where would you like to order " + product + " from?"
+                this.response.speak(speechOutput);
+                this.response.reprompt("Where would you like to order " + product + " from?")
+            }
+        });
+        
         this.emit(':responseReady');
     },
     'AMAZON.HelpIntent': function () {
