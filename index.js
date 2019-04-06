@@ -87,7 +87,7 @@ function pay(amount, success, failure) {
             .catch(failure);
 }
 
-function isLocked(ID) {
+async function isLocked(ID) {
     var params = {};
 
     params.TableName = "Lock";
@@ -95,7 +95,7 @@ function isLocked(ID) {
 
     var result = true;
 
-    docClient.get(params, function(err, data) {
+    await docClient.get(params, function(err, data) {
         if (err) {
             console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
             result = true;
@@ -119,12 +119,12 @@ function isLocked(ID) {
             console.log(data);
             result = data.state;
         }
-
-        return result;
     });
+
+    return result;
 }
 
-function setLock(ID, newState) {
+async function setLock(ID, newState) {
     var params = {
         TableName : "Lock",
         Key:{
@@ -139,7 +139,7 @@ function setLock(ID, newState) {
 
     result = true;
 
-    docClient.update(params, function(err, data) {
+    await docClient.update(params, function(err, data) {
         if (err) {
             console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
             result = false;
@@ -147,8 +147,10 @@ function setLock(ID, newState) {
             result = true;
         }
 
-        return result;
+        
     });
+
+    return result;
 }
 
 //=========================================================================================================================================
