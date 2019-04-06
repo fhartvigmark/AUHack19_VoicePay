@@ -21,7 +21,7 @@ module.exports.handler = (event, context, callback) => {
 	// 		"productID": "a2141faef214124aefae12312",
 	// 		"account": 10000119798,
 	// 		"regnr": 14684116886,
-	// 		"venderID": 68168168186,
+	// 		"vendorID": 68168168186,
 	// }),
   let content = JSON.parse(event.body);
 	console.log(content);
@@ -53,8 +53,10 @@ const insertData = (content, fn) => {
 					"vendor_loc": content.vendor_loc,
 					"vendorname": content.vendorname,
 					"productname": content.productname,
-	        "productID": id,
-	        "content":content
+					"productID": id,
+					"account": content.account,
+					"regnr": content.regnr,
+	        "vendorID":content.vendorID
 	    }
 	};
 	
