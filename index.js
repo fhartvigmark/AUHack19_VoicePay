@@ -96,12 +96,13 @@ function isLocked(ID) {
     docClient.get(params, function(err, data) {
         if (err) {
             console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
-
+            return true;
+        } else if (!Object.keys(data).length){
             var params2 = {};
             params2.TableName = "Lock";
-            params2.Item = {"lock" : ID, "state" : false}
+            params2.Item = { "lock": ID, "state": false }
 
-            docClient.put(params2, function(err, data) {
+            docClient.put(params2, function (err, data) {
                 if (err) {
                     console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
                     return true;
@@ -109,9 +110,10 @@ function isLocked(ID) {
                     return false;
                 }
             });
-        } else {
+        }else{
             console.log("Query succeeded.");
-            return data.Items[0].state;
+            console.log(data);
+            return data.state;
         }
     });
 }
@@ -145,7 +147,7 @@ function setLock(ID, newState) {
 
 const handlers = {
     'LaunchRequest': function () {
-        var deviceID = String(this.event.context.System.device.deviceId);
+        var deviceID = this.event.context.System.user.userId;
 
         if (isLocked(deviceID)) {
             this.response.speak("Your account is locked");
