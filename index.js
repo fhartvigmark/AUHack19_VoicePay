@@ -34,6 +34,8 @@ const HELP_REPROMPT = 'What can I help you with?';
 const STOP_MESSAGE = 'Goodbye!';
 
 
+
+
 //=========================================================================================================================================
 //Functions
 //=========================================================================================================================================
@@ -85,6 +87,72 @@ function pay(amount, success, failure) {
             .catch(failure(data));
 }
 
+function isLocked(ID) {
+    var params = {
+        TableName : "Locks",
+        ProjectionExpression:"#id, state",
+        FilterExpression: "#id = :ID",
+        ExpressionAttributeNames:{
+            "#pr": "deviceID"
+        },
+        ExpressionAttributeValues: {
+            ":ID": ID
+        }
+    };
+
+    docClient.scan(params, function(err, data) {
+        if (err) {
+            console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
+            return true;
+        } else {
+            console.log("Query succeeded.");
+            if (data.Count > 0) {
+                return data.Items[0].state;
+            }
+            else {
+                var params = {
+                    TableName : "Locks",
+                    Item:{
+                        "deviceID": ID,
+                        "state": false
+                    }
+                };
+
+                docClient.put(params, function(err, data) {
+                    if (err) {
+                        console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
+            }
+        }
+    });
+}
+
+function setLock(ID, newState) {
+    var params = {
+        TableName : "Locks",
+        Key:{
+            "deviceID": ID,
+        },
+        UpdateExpression: "set info.state = :s",
+        ExpressionAttributeValues:{
+            ":s": newState
+        },
+        ReturnValues:"UPDATED_NEW"
+    };
+
+    docClient.update(params, function(err, data) {
+        if (err) {
+            console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
+            return false;
+        } else {
+            return true;
+        }
+    });
+}
 
 //=========================================================================================================================================
 //Editing anything below this line might break your skill.
@@ -92,6 +160,14 @@ function pay(amount, success, failure) {
 
 const handlers = {
     'LaunchRequest': function () {
+        var deviceID = this.context.System.device.deviceId;
+
+        if (isLocked(deviceID)) {
+            this.response.speak("Your account is locked");
+            this.emit(':responseReady');
+            return;
+        }
+
         this.response.speak(SKILL_NAME);
         this.emit(':responseReady');
         //this.emit('MakePayment');
