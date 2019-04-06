@@ -47,7 +47,7 @@ module.exports.handler = (event, context, callback) => {
 const insertData = (content, fn) => {
 	var id = uniq();
 	var params = {
-    	TableName: table,
+    	TableName:table,
     	Item: {
 					"price": content.price,
 					"vendor_loc": content.vendor_loc,
