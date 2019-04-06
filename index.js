@@ -91,7 +91,7 @@ function isLocked(ID) {
     var params = {
         TableName : "Locks",
         Key:{
-            "deviceID": ID
+            "deviceID": {"S": ID}
         }
     };
 
@@ -102,7 +102,7 @@ function isLocked(ID) {
             var params = {
                 TableName : "Locks",
                 Item:{
-                    "deviceID": ID,
+                    "deviceID": {"S": ID},
                     "state": false
                 }
             };
