@@ -53,11 +53,11 @@ const handlers = {
         const vendor = this.event.request.intent.slots.vendor.value;
 
         var params = {
-            TableName : "Products",
+            TableName : "Product",
             ProjectionExpression:"#pr, vendor, location, price",
             KeyConditionExpression: "#pr = :pp and vendor = :vv",
             ExpressionAttributeNames:{
-                "#pr": "product"
+                "#pr": "productname"
             },
             ExpressionAttributeValues: {
                 ":pp": product,
@@ -89,11 +89,11 @@ const handlers = {
     'MakeOrder': function () {
         const product = this.event.request.intent.slots.order.value;
         var params = {
-            TableName : "Products",
+            TableName : "Product",
             ProjectionExpression:"#pr, vendor, location, price",
             KeyConditionExpression: "#pr = :pp",
             ExpressionAttributeNames:{
-                "#pr": "product"
+                "#pr": "productname"
             },
             ExpressionAttributeValues: {
                 ":pp": product
