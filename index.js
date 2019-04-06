@@ -93,10 +93,12 @@ function isLocked(ID) {
     params.TableName = "Lock";
     params.Key = {"lock" : ID};
 
+    var result = true;
+
     docClient.get(params, function(err, data) {
         if (err) {
             console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
-            return true;
+            result = true;
         } else if (!Object.keys(data).length){
             var params2 = {};
             params2.TableName = "Lock";
@@ -110,11 +112,15 @@ function isLocked(ID) {
                     return false;
                 }
             });
+
+            result = false;
         }else{
             console.log("Query succeeded.");
             console.log(data);
-            return data.state;
+            result = data.state;
         }
+
+        return result;
     });
 }
 
@@ -131,13 +137,17 @@ function setLock(ID, newState) {
         ReturnValues:"UPDATED_NEW"
     };
 
+    result = true;
+
     docClient.update(params, function(err, data) {
         if (err) {
             console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
-            return false;
+            result = false;
         } else {
-            return true;
+            result = true;
         }
+
+        return result;
     });
 }
 
