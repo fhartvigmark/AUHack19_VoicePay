@@ -69,6 +69,8 @@ const handlers = {
             if (err) {
                 console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
                 this.response.speak("Sorry could not process order");
+
+                this.emit(':responseReady');
             } else {
                 console.log("Query succeeded.");
                 var places = ""
@@ -78,12 +80,11 @@ const handlers = {
                 else {
                     this.response.speak("Order placed");
                     var price = data.Items[0].price
+                    //TODO: make payment
+                    this.emit(':responseReady');
                 }
             }
         });
-        //TODO: make payment
-        
-        this.emit(':responseReady');
     },
     'MakeOrder': function () {
         const product = this.event.request.intent.slots.order.value;
@@ -104,6 +105,7 @@ const handlers = {
                 console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
                 const speechOutput = ORDER_PRODUCT_NOT_FOUND + product
                 this.response.speak(speechOutput);
+                this.emit(':responseReady');
             } else {
                 console.log("Query succeeded.");
                 var places = ""
@@ -115,10 +117,9 @@ const handlers = {
                 const speechOutput = "I found " + data.Count + " places you can order " + product + " from" + places + ". Where would you like to order " + product + " from?"
                 this.response.speak(speechOutput);
                 this.response.reprompt("Where would you like to order " + product + " from?")
+                this.emit(':responseReady');
             }
         });
-        
-        this.emit(':responseReady');
     },
     'AMAZON.HelpIntent': function () {
         const speechOutput = HELP_MESSAGE;
