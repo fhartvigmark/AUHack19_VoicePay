@@ -94,12 +94,13 @@ const handlers = {
             });
     },
     "AnswerOrder": function () {
+        var mythis = this;
         const product = this.event.request.intent.slots.order.value;
         const vendor = this.event.request.intent.slots.vendor.value;
 
         var params = {
             TableName : "Product",
-            ProjectionExpression:"#pr, vendor, location, price",
+            ProjectionExpression:"#pr, vendor, vendor_loc, price",
             FilterExpression: "#pr = :pp and vendor = :vv",
             ExpressionAttributeNames:{
                 "#pr": "productname"
@@ -113,29 +114,30 @@ const handlers = {
         docClient.scan(params, function(err, data) {
             if (err) {
                 console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
-                this.response.speak("Sorry could not process order");
+                mythis.response.speak("Sorry could not process order");
 
-                this.emit(':responseReady');
+                mythis.emit(':responseReady');
             } else {
                 console.log("Query succeeded.");
-                var places = ""
+                var places = "";
                 if (data.Count != 1) {
-                    this.response.speak("Sorry could not process order");
+                    mythis.response.speak("Sorry could not process order");
                 }
                 else {
-                    this.response.speak("Order placed");
-                    var price = data.Items[0].price
+                    mythis.response.speak("Order placed");
+                    var price = data.Items[0].price;
                     //TODO: make payment
-                    this.emit(':responseReady');
+                    mythis.emit(':responseReady');
                 }
             }
         });
     },
     'MakeOrder': function () {
+        var mythis =this;
         const product = this.event.request.intent.slots.order.value;
         var params = {
             TableName : "Product",
-            ProjectionExpression:"#pr, vendor, location, price",
+            ProjectionExpression:"#pr, vendor, vendor_loc, price",
             FilterExpression: "#pr = :pp",
             ExpressionAttributeNames:{
                 "#pr": "productname"
@@ -148,7 +150,7 @@ const handlers = {
         docClient.scan(params, function(err, data) {
             if (err) {
                 console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
-                const speechOutput = ORDER_PRODUCT_NOT_FOUND + product
+                const speechOutput = ORDER_PRODUCT_NOT_FOUND + product;
                 this.response.speak(speechOutput);
                 this.emit(':responseReady');
             } else {
@@ -159,10 +161,10 @@ const handlers = {
                     places += item.vendor + ", "
                 });
                 
-                const speechOutput = "I found " + data.Count + " places you can order " + product + " from" + places + ". Where would you like to order " + product + " from?"
-                this.response.speak(speechOutput);
-                this.response.reprompt("Where would you like to order " + product + " from?")
-                this.emit(':responseReady');
+                const speechOutput = "I found " + data.Count + " places you can order " + product + " from " + places + ". Where would you like to order " + product + " from?";
+                const reprompt = "Where would you like to order " + product + " from?";
+                mythis.response.speak(speechOutput).listen(reprompt);
+                mythis.emit(':responseReady');
             }
         });
     },
