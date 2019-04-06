@@ -90,43 +90,34 @@ function pay(amount, success, failure) {
 function isLocked(ID) {
     var params = {
         TableName : "Locks",
-        ProjectionExpression:"#id, state",
-        FilterExpression: "#id = :ID",
-        ExpressionAttributeNames:{
-            "#pr": "deviceID"
-        },
-        ExpressionAttributeValues: {
-            ":ID": ID
+        Key:{
+            "deviceID": ID
         }
     };
 
-    docClient.scan(params, function(err, data) {
+    docClient.get(params, function(err, data) {
         if (err) {
             console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
-            return true;
+
+            var params = {
+                TableName : "Locks",
+                Item:{
+                    "deviceID": ID,
+                    "state": false
+                }
+            };
+
+            docClient.put(params, function(err, data) {
+                if (err) {
+                    console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
+                    return true;
+                } else {
+                    return false;
+                }
+            });
         } else {
             console.log("Query succeeded.");
-            if (data.Count > 0) {
-                return data.Items[0].state;
-            }
-            else {
-                var params = {
-                    TableName : "Locks",
-                    Item:{
-                        "deviceID": ID,
-                        "state": false
-                    }
-                };
-
-                docClient.put(params, function(err, data) {
-                    if (err) {
-                        console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
-                        return true;
-                    } else {
-                        return false;
-                    }
-                });
-            }
+            return data.Items[0].state;
         }
     });
 }
