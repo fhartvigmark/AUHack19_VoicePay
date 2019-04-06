@@ -87,18 +87,16 @@ function pay(amount, success, failure) {
             .catch(failure);
 }
 
-async function isLocked(ID) {
+function isLocked(ID, callback) {
     var params = {};
 
     params.TableName = "Lock";
     params.Key = {"lock" : ID};
 
-    var result = true;
-
-    await docClient.get(params, function(err, data) {
+    docClient.get(params, function(err, data) {
         if (err) {
             console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
-            result = true;
+            callback(true);
         } else if (!Object.keys(data).length){
             var params2 = {};
             params2.TableName = "Lock";
@@ -113,18 +111,18 @@ async function isLocked(ID) {
                 }
             });
 
-            result = false;
+            callback(false);
         }else{
             console.log("Query succeeded.");
             console.log(data);
-            result = data.state;
+            callback(data.state);
         }
     });
 
     return result;
 }
 
-async function setLock(ID, newState) {
+function setLock(ID, newState, callback) {
     var params = {
         TableName : "Lock",
         Key:{
@@ -137,20 +135,14 @@ async function setLock(ID, newState) {
         ReturnValues:"UPDATED_NEW"
     };
 
-    result = true;
-
-    await docClient.update(params, function(err, data) {
+    docClient.update(params, function(err, data) {
         if (err) {
             console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
-            result = false;
+            callback(false);
         } else {
-            result = true;
+            callback(true);
         }
-
-        
     });
-
-    return result;
 }
 
 //=========================================================================================================================================
@@ -161,15 +153,16 @@ const handlers = {
     'LaunchRequest': function () {
         var deviceID = this.event.context.System.user.userId;
 
-        if (isLocked(deviceID)) {
-            this.response.speak("Your account is locked");
-            this.emit(':responseReady');
-        }
-        else{
-            this.response.speak(SKILL_NAME);
-            this.emit(':responseReady');
-        }
-        //this.emit('MakePayment');
+        isLocked(deviceID, status => {
+            if (status) {
+                this.response.speak("Your account is locked");
+                this.emit(':responseReady');
+            }
+            else{
+                this.response.speak(SKILL_NAME);
+                this.emit(':responseReady');
+            }
+        })
     },
     'MakePayment': function () {
         const recipient = this.event.request.intent.slots.recipient.value;
@@ -301,6 +294,20 @@ const handlers = {
                 mythis.emit(':responseReady');
             }
         });
+    },
+    'Lock': function () {
+        const speechOutput = HELP_MESSAGE;
+        const reprompt = HELP_REPROMPT;
+
+        this.response.speak(speechOutput).listen(reprompt);
+        this.emit(':responseReady');
+    },
+    'Unlock': function () {
+        const speechOutput = HELP_MESSAGE;
+        const reprompt = HELP_REPROMPT;
+
+        this.response.speak(speechOutput).listen(reprompt);
+        this.emit(':responseReady');
     },
     'AMAZON.HelpIntent': function () {
         const speechOutput = HELP_MESSAGE;
