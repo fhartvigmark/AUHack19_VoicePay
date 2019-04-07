@@ -100,7 +100,7 @@ function isLocked(ID, callback) {
         } else if (!Object.keys(data).length){
             var params2 = {};
             params2.TableName = "Lock";
-            params2.Item = { "lock": ID, "state": false }
+            params2.Item = { "lock": ID, "isLocked": false }
 
             docClient.put(params2, function (err, data) {
                 if (err) {
@@ -115,11 +115,9 @@ function isLocked(ID, callback) {
         }else{
             console.log("Query succeeded.");
             console.log(data);
-            callback(data.state);
+            callback(data.Item.isLocked);
         }
     });
-
-    return result;
 }
 
 function setLock(ID, newState, callback) {
@@ -128,7 +126,7 @@ function setLock(ID, newState, callback) {
         Key:{
             "lock": ID
         },
-        UpdateExpression: "set info.state = :s",
+        UpdateExpression: "set isLocked = :s",
         ExpressionAttributeValues:{
             ":s": newState
         },
