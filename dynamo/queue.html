@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.437.0.min.js"></script>
+<script>
+    // Load the AWS SDK for Node.js
+//var AWS = require('aws-sdk');
+// Set the region
+AWS.config.update({region: 'eu-west-1'});
+
+// Create an SQS service object
+var sqs = new AWS.SQS({apiVersion: '2012-11-05'});
+
+var queueURL = "https://sqs.eu-west-1.amazonaws.com/803992687199/orderq";
+
+var params = {
+ AttributeNames: [
+    "SentTimestamp"
+ ],
+ MaxNumberOfMessages: 10,
+ MessageAttributeNames: [
+    "All"
+ ],
+ QueueUrl: queueURL,
+ VisibilityTimeout: 20,
+ WaitTimeSeconds: 0
+};
+
+function get_request() {
+    var table = document.getElementById("orders");
+
+    sqs.receiveMessage(params, function(err, data) {
+        if (err) {
+            console.log("Receive Error", err);
+            setTimeout( get_request, 10000 );
+        } else if (data.Messages) {
+            console.log(data);
+            data.Messages.forEach(element => {
+                var order = JSON.parse(element.Body);
+
+                var row = table.insertRow(1);
+                var cell1 = row.insertCell(0);
+                var cell2 = row.insertCell(1);
+                var cell3 = row.insertCell(2);
+                var cell4 = row.insertCell(3);
+                var cell5 = row.insertCell(4);
+
+                cell1.innerHTML = order.product;
+                cell2.innerHTML = order.phone;
+                cell3.innerHTML = order.name;
+                cell4.innerHTML = order.address;
+                cell5.innerHTML = order.time;
+            });
+
+            var deleteParams = {
+                QueueUrl: queueURL,
+                ReceiptHandle: data.Messages[0].ReceiptHandle
+            };
+            sqs.deleteMessage(deleteParams, function(err, data) {
+                if (err) {
+                    console.log("Delete Error", err);
+                } else {
+                    console.log("Message Deleted", data);
+                }
+            });
+            
+            setTimeout( get_request, 10000 );
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', (event) => {
+    get_request();
+})
+</script>
+<body>
+<div style="width:100%;overflow:hidden">
+    <div style="width:600px;float:left">
+    </div>
+    <div style="margin-left: 601px">
+        <h1>Orders</h1>
+        <table style="width:100%" id="orders">
+                <tr>
+                  <th>Product</th>
+                  <th>Phone</th> 
+                  <th>Name</th>
+                  <th>Address</th>
+                  <th>Time</th>
+                </tr>
+                
+              </table>
+    </div>
+</div>
+</body>
+<footer></footer>
+</html>
