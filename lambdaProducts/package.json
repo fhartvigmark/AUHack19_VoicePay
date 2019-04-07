@@ -1,0 +1,9 @@
+{
+    "name": "alexa-skill-kit-sdk-factskill",
+    "version": "1.0.0",
+    "private": true,
+    "dependencies": {
+        "aws-sdk": "^2.437.0",
+        "uniqid": "^5.0.3"
+    }
+}

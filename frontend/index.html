@@ -60,7 +60,8 @@
         <script type="text/babel">
 
             // CHANGE THIS URL
-            let url = "https://y9ojosulu0.execute-api.eu-west-1.amazonaws.com/dev"
+            //let url = "https://cg85d9g0eh.execute-api.eu-west-1.amazonaws.com/dev"
+            let url = "https://mg65fop93b.execute-api.eu-west-1.amazonaws.com/Devolp"
 
             class MyTodos extends React.Component{
 
@@ -90,11 +91,11 @@
                 getTodos(delay){
 
                     this.setState({
-                        isLoading : true,
+                        isLoading : false,
                         todos: []
                     });
                     if (delay){
-                        this.waitSeconds(1600);
+                        this.waitSeconds(100);
                     }
                     fetch(url, {
                         method: 'get'
@@ -129,22 +130,31 @@
                     fetch(url, {
                         method: 'POST',
                         body: JSON.stringify({
-                            "content": this.state.newContent,
+                            "price": 75,
+                            "vendor_loc": "Århus N - Finlandsgade 20",
+                            "vendorname": "Dominos",
+                            "productname": "Pizzas",
+                            "productID": "a2141faef214124aefae12312",
+                            "account": 20202020,
+                            "regnr": 3232,
+                            "vendorID": "6aef816gaeg81681aegae86"
                         }),
                         headers: {
                             "Content-Type": "application/json",
+                            "Access-Control-Allow-Origin" : "*", 
+                            "Access-Control-Allow-Credentials" : true,
                             // "Content-Type": "application/x-www-form-urlencoded",
                         },
                         mode: "cors",
                         cache: "no-cache",
                     })
-                        .then(response => response.json())
-                        .then(() => this.onTodoClose())
-                        .then(() => this.setState({
-                            isLoading: false,
-                            newContent: undefined
-                        }))
-                        .then(() => this.getTodos(true))
+                        .then(response => console.log(response.json()))
+                        //.then(() => this.onTodoClose())
+                        //.then(() => this.setState({
+                        //    isLoading: false,
+                        //    newContent: undefined
+                        //}))
+                        //.then(() => this.getTodos(true))
                         .catch(error => console.error('Error:', error));
                 }
 
