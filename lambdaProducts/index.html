@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  </head>
+  <body>
+
+
+  <p id="demo"></p>
+<script>
+
+document.addEventListener("DOMContentLoaded", function(event) { 
+  //do work
+
+  demoP = document.getElementById("demo");
+  function myFunction(item, index) {
+    demoP.innerHTML = demoP.innerHTML + "index[" + index + "]: Name:" + item.vendorname + ", Product:" + item.productname + " located at " + item.vendor_loc +"<br>"; 
+  }
+
+
+  let url = 'https://cg85d9g0eh.execute-api.eu-west-1.amazonaws.com/dev';
+  todos = [];
+  fetch(url, {
+      method: 'get'
+  }).then(response => {
+    console.log("res", response);    
+    return response.json();
+  }).then(response => {
+    console.log("todo: res ", response.body);
+    body = JSON.parse(response.body);
+    console.log("HERE: ", body.data);
+    body.data.Items
+      .forEach(myFunction);
+      //.map((item) => [item.vendorname, item.productname, item.vendor_loc]);
+    //console.log(todos);
+
+    //todos.forEach((val, index) => {
+    //  console.log("val:",val);
+    //  console.log("index:",index);
+    //  myFunction(val,index);
+    //});
+
+
+  })
+  .catch(error => console.error('Error:', error))
+});
+
+</script>
+
+</body>
+</html>
+
+
+<!--
+
+
+
+  $.get(url, function(result){
+    console.log("res:" + result);
+
+    console.log("body " + result.body);
+    console.log("aefaefaef " + result.body.data);
+    
+    let body = JSON.parse(result.body);
+    console.log("data:" + body.data.Items);
+
+
+    demoP = document.getElementById("demo");
+    function myFunction(item, index) {
+      demoP.innerHTML = demoP.innerHTML + "index[" + index + "]: " + item + "<br>"; 
+    }
+
+  });
+
+-->
