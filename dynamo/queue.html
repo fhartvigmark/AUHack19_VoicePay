@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://sdk.amazonaws.com/js/aws-sdk-2.437.0.min.js"></script>
 <script>
     // Load the AWS SDK for Node.js
@@ -68,15 +69,65 @@ function get_request() {
     });
 }
 
+
+
+function get_products() {
+    var table = document.getElementById("products");
+    let url = 'https://cg85d9g0eh.execute-api.eu-west-1.amazonaws.com/dev';
+
+    fetch(url, {
+        method: 'get'
+    }).then(response => response.json())
+    .then(response => {
+        body = JSON.parse(response.body);
+        body.data.Items.forEach(element =>{
+            var row = table.insertRow(1);
+            var cell1 = row.insertCell(0);
+            var cell2 = row.insertCell(1);
+            var cell3 = row.insertCell(2);
+            var cell4 = row.insertCell(3);
+            var cell5 = row.insertCell(4);
+
+            cell1.innerHTML = element.vendorname;
+            cell2.innerHTML = element.productname;
+            cell3.innerHTML = element.vendor_loc;
+            cell4.innerHTML = element.productID;
+            cell5.innerHTML = element.vendorID;
+        });
+    })
+    .catch(error => console.error('Error:', error))
+
+}
+
+
+
+
 document.addEventListener('DOMContentLoaded', (event) => {
-    get_request();
+    //get_request();
+    get_products();
+
 })
 </script>
 <body>
 <div style="width:100%;overflow:hidden">
     <div style="width:600px;float:left">
+             <!-- PRODUCTS -->
+        
+    <h1>Products</h1>
+    <table style="width:100%" id="products">
+        <tr>
+            <th>Vendor name</th>
+            <th>Product name</th> 
+            <th>A</th>
+            <th>B</th>
+            <th>C</th>
+        </tr>
+        
+        </table>
+
+
     </div>
-    <div style="margin-left: 601px">
+    <div style="margin-left: 901px">
         <h1>Orders</h1>
         <table style="width:100%" id="orders">
                 <tr>
@@ -89,6 +140,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 
               </table>
     </div>
+
+   
+    
+        
+
+
 </div>
 </body>
 <footer></footer>
