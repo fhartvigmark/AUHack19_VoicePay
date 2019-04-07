@@ -296,18 +296,48 @@ const handlers = {
         });
     },
     'Lock': function () {
-        const speechOutput = HELP_MESSAGE;
-        const reprompt = HELP_REPROMPT;
+        var deviceID = this.event.context.System.user.userId;
 
-        this.response.speak(speechOutput).listen(reprompt);
-        this.emit(':responseReady');
+        isLocked(deviceID, status => {
+            if (status) {
+                this.response.speak("Your account is already locked");
+                this.emit(':responseReady');
+            }
+            else{
+                setLock(deviceID, true, res => {
+                    if (res) {
+                        this.response.speak("Locked your account");
+                        this.emit(':responseReady');
+                    }
+                    else {
+                        this.response.speak("Error");
+                        this.emit(':responseReady');
+                    }
+                }) 
+            }
+        })
     },
     'Unlock': function () {
-        const speechOutput = HELP_MESSAGE;
-        const reprompt = HELP_REPROMPT;
+        var deviceID = this.event.context.System.user.userId;
 
-        this.response.speak(speechOutput).listen(reprompt);
-        this.emit(':responseReady');
+        isLocked(deviceID, status => {
+            if (!status) {
+                this.response.speak("Your account is not locked");
+                this.emit(':responseReady');
+            }
+            else{
+                setLock(deviceID, false, res => {
+                    if (res) {
+                        this.response.speak("Unlocked your account");
+                        this.emit(':responseReady');
+                    }
+                    else {
+                        this.response.speak("Error");
+                        this.emit(':responseReady');
+                    }
+                }) 
+            }
+        })
     },
     'AMAZON.HelpIntent': function () {
         const speechOutput = HELP_MESSAGE;
