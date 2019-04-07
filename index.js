@@ -341,9 +341,8 @@ const handlers = {
     },
     'AMAZON.HelpIntent': function () {
         const speechOutput = HELP_MESSAGE;
-        const reprompt = HELP_REPROMPT;
 
-        this.response.speak(speechOutput).listen(reprompt);
+        this.response.speak(speechOutput);
         this.emit(':responseReady');
     },
     'AMAZON.CancelIntent': function () {
