@@ -32,6 +32,7 @@ const ORDER_PLACED_MESSAGE = "Placed order for ";
 const HELP_MESSAGE = 'You can say pay amount to recipient';
 const HELP_REPROMPT = 'What can I help you with?';
 const STOP_MESSAGE = 'Goodbye!';
+const PASSWORD = 'password';
 
 
 
@@ -349,6 +350,7 @@ const handlers = {
     },
     'Unlock': function () {
         var deviceID = this.event.context.System.user.userId;
+        const phrase = this.event.request.intent.slots.phrase.value;
 
         isLocked(deviceID, status => {
             if (!status) {
@@ -356,16 +358,22 @@ const handlers = {
                 this.emit(':responseReady');
             }
             else{
-                setLock(deviceID, false, res => {
-                    if (res) {
-                        this.response.speak("Unlocked your account");
-                        this.emit(':responseReady');
-                    }
-                    else {
-                        this.response.speak("Error");
-                        this.emit(':responseReady');
-                    }
-                }) 
+                if (phrase == PASSWORD) {
+                    setLock(deviceID, false, res => {
+                        if (res) {
+                            this.response.speak("Unlocked your account");
+                            this.emit(':responseReady');
+                        }
+                        else {
+                            this.response.speak("Error");
+                            this.emit(':responseReady');
+                        }
+                    }) 
+                }
+                else {
+                    this.response.speak("That is not the correct password");
+                    this.emit(':responseReady');
+                }
             }
         })
     },
